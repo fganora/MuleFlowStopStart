@@ -15,12 +15,28 @@ flowVars.action = message.inboundProperties.'http.query.params'.action;]]></expr
         <choice doc:name="Choice">
             <when expression="#[flowVars.action == 'stop']">
                 <scripting:component doc:name="stop">
-                    <scripting:script engine="Groovy"><![CDATA[muleContext.registry.lookupFlowConstruct(flowVars.name).stop()]]></scripting:script>
+                    <scripting:script engine="Groovy"><![CDATA[def theFlow = muleContext.registry.lookupFlowConstruct(flowVars.name);
+if (theFlow.isStarted()) {
+	theFlow.stop();
+	payload = "Stopped flow " + flowVars.name;
+}
+	
+else {
+	payload = "Flow " + flowVars.name + " is already stopped";
+}]]></scripting:script>
                 </scripting:component>
             </when>
             <otherwise>
                 <scripting:component doc:name="start">
-                    <scripting:script engine="Groovy"><![CDATA[muleContext.registry.lookupFlowConstruct(flowVars.name).start()]]></scripting:script>
+                    <scripting:script engine="Groovy"><![CDATA[def theFlow = muleContext.registry.lookupFlowConstruct(flowVars.name);
+if (!theFlow.isStarted()) {
+	theFlow.start();
+	payload = "Started flow " + flowVars.name;
+}
+	
+else {
+	payload = "Flow " + flowVars.name + " is already started";
+}]]></scripting:script>
                 </scripting:component>
             </otherwise>
         </choice>
